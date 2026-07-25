@@ -3,22 +3,61 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>To-Do List</title>
+  <title>To-Do List - TP Data Center</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>📋 Mi Lista de Tareas - TP Data Center</h1>
 
-    <form id="task-form">
-      <input type="text" id="task-input" placeholder="Nueva tarea..." required>
-      <button type="submit">Agregar</button>
-    </form>
+  <!-- PANTALLA DE BIENVENIDA -->
+  <section id="welcome-screen" class="screen">
+    <div class="welcome-box">
+      <h1>📋 Mi Lista de Tareas</h1>
+      <p>Organizá tus tareas académicas por materia y fecha de entrega.</p>
+      <button id="enter-btn">Entrar</button>
+    </div>
+  </section>
 
-    <input type="text" id="filter-input" placeholder="🔍 Filtrar tareas...">
+  <!-- PANTALLA PRINCIPAL (CRUD) -->
+  <section id="app-screen" class="screen hidden">
+    <div class="container">
+      <h1>Mi Lista de Tareas</h1>
 
-    <ul id="task-list"></ul>
-  </div>
+      <form id="task-form">
+        <input type="text" id="task-input" placeholder="Nueva tarea..." required>
+
+        <select id="materia-select">
+          <option value="">Sin materia</option>
+        </select>
+        <button type="button" id="new-materia-btn" title="Agregar materia nueva">➕</button>
+
+        <input type="date" id="fecha-input">
+
+        <button type="submit">Agregar</button>
+      </form>
+
+      <div class="filters">
+        <input type="text" id="filter-input" placeholder="🔍 Filtrar por texto...">
+        <select id="date-filter-select">
+          <option value="">Todas las fechas</option>
+          <option value="week">Esta semana</option>
+          <option value="month">Este mes</option>
+        </select>
+      </div>
+
+      <table id="task-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Tarea</th>
+            <th>Materia</th>
+            <th>Fecha de entrega</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="task-list"></tbody>
+      </table>
+    </div>
+  </section>
 
   <script src="app.js"></script>
 </body>

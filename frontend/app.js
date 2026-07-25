@@ -1,17 +1,84 @@
-// Detecta automáticamente la URL de la API según dónde se esté ejecutando
 const API_URL = '/api/tasks';
+const MATERIAS_URL = '/api/materias';
 
+// Elementos - navegación
+const welcomeScreen = document.getElementById('welcome-screen');
+const appScreen = document.getElementById('app-screen');
+const enterBtn = document.getElementById('enter-btn');
+
+// Elementos - formulario y filtros
 const taskForm = document.getElementById('task-form');
 const taskInput = document.getElementById('task-input');
+const materiaSelect = document.getElementById('materia-select');
+const newMateriaBtn = document.getElementById('new-materia-btn');
+const fechaInput = document.getElementById('fecha-input');
 const filterInput = document.getElementById('filter-input');
+const dateFilterSelect = document.getElementById('date-filter-select');
 const taskList = document.getElementById('task-list');
 
-let allTasks = []; // guardamos las tareas en memoria para filtrar sin pedirlas de nuevo al servidor
+let allTasks = [];
 
-// Traer todas las tareas desde la API y renderizarlas
+/* ==============================
+   NAVEGACIÓN ENTRE PANTALLAS
+============================== */
+enterBtn.addEventListener('click', () => {
+  welcomeScreen.classList.add('hidden');
+  appScreen.classList.remove('hidden');
+  fetchMaterias();
+  fetchTasks();
+});
+
+/* ==============================
+   MATERIAS
+============================== */
+async function fetchMaterias() {
+  try {
+    const res = await fetch(MATERIAS_URL);
+    const materias = await res.json();
+
+    materiaSelect.innerHTML = '<option value="">Sin materia</option>';
+    materias.forEach(materia => {
+      const opt = document.createElement('option');
+      opt.value = materia.id;
+      opt.textContent = materia.nombre;
+      materiaSelect.appendChild(opt);
+    });
+  } catch (err) {
+    console.error('Error al obtener materias:', err);
+  }
+}
+
+newMateriaBtn.addEventListener('click', async () => {
+  const nombre = prompt('Nombre de la nueva materia:');
+  if (!nombre || nombre.trim() === '') return;
+
+  try {
+    const res = await fetch(MATERIAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre: nombre.trim() })
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      alert(data.error || 'Error al crear materia');
+      return;
+    }
+    await fetchMaterias();
+  } catch (err) {
+    console.error('Error al crear materia:', err);
+  }
+});
+
+/* ==============================
+   TAREAS: obtener y renderizar
+============================== */
 async function fetchTasks() {
   try {
-    const res = await fetch(API_URL);
+    const params = new URLSearchParams();
+    if (filterInput.value) params.append('search', filterInput.value);
+    if (dateFilterSelect.value) params.append('date_filter', dateFilterSelect.value);
+
+    const res = await fetch(`${API_URL}?${params.toString()}`);
     allTasks = await res.json();
     renderTasks(allTasks);
   } catch (err) {
@@ -19,32 +86,45 @@ async function fetchTasks() {
   }
 }
 
-// Dibujar la lista de tareas en el HTML
+function formatFecha(fecha) {
+  if (!fecha) return '<span class="sin-materia">Sin fecha</span>';
+  const [year, month, day] = fecha.split('T')[0].split('-');
+  return `${day}/${month}/${year}`;
+}
+
 function renderTasks(tasks) {
   taskList.innerHTML = '';
 
   if (tasks.length === 0) {
-    taskList.innerHTML = '<li>No hay tareas para mostrar.</li>';
+    taskList.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#999;">No hay tareas para mostrar.</td></tr>';
     return;
   }
 
   tasks.forEach(task => {
-    const li = document.createElement('li');
-    li.className = task.completed ? 'completed' : '';
+    const tr = document.createElement('tr');
+    tr.className = task.completed ? 'completed' : '';
 
-    li.innerHTML = `
-      <input type="checkbox" ${task.completed ? 'checked' : ''} data-id="${task.id}" class="toggle-check">
-      <span class="task-title">${task.title}</span>
-      <span class="task-actions">
+    const materiaHtml = task.materia_nombre
+      ? `<span class="materia-badge">${task.materia_nombre}</span>`
+      : `<span class="sin-materia">Sin materia</span>`;
+
+    tr.innerHTML = `
+      <td><input type="checkbox" ${task.completed ? 'checked' : ''} data-id="${task.id}" class="toggle-check"></td>
+      <td class="task-title">${task.title}</td>
+      <td>${materiaHtml}</td>
+      <td>${formatFecha(task.fecha_entrega)}</td>
+      <td class="task-actions">
         <button class="edit-btn" data-id="${task.id}" title="Editar">✏️</button>
         <button class="delete-btn" data-id="${task.id}" title="Eliminar">🗑️</button>
-      </span>
+      </td>
     `;
-    taskList.appendChild(li);
+    taskList.appendChild(tr);
   });
 }
 
-// INSERTAR: Crear nueva tarea
+/* ==============================
+   CREAR tarea
+============================== */
 taskForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const title = taskInput.value.trim();
@@ -54,21 +134,28 @@ taskForm.addEventListener('submit', async (e) => {
     await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title })
+      body: JSON.stringify({
+        title,
+        materia_id: materiaSelect.value || null,
+        fecha_entrega: fechaInput.value || null
+      })
     });
     taskInput.value = '';
+    fechaInput.value = '';
+    materiaSelect.value = '';
     fetchTasks();
   } catch (err) {
     console.error('Error al crear tarea:', err);
   }
 });
 
-// ACTUALIZAR (checkbox) y ELIMINAR: usamos delegación de eventos sobre la lista
+/* ==============================
+   ACTUALIZAR / ELIMINAR (delegación de eventos)
+============================== */
 taskList.addEventListener('click', async (e) => {
   const id = e.target.dataset.id;
   if (!id) return;
 
-  // Marcar como completada / no completada
   if (e.target.classList.contains('toggle-check')) {
     const completed = e.target.checked;
     await fetch(`${API_URL}/${id}`, {
@@ -79,7 +166,6 @@ taskList.addEventListener('click', async (e) => {
     fetchTasks();
   }
 
-// Eliminar tarea
   if (e.target.classList.contains('delete-btn')) {
     const currentTask = allTasks.find(t => t.id == id);
     if (confirm(`"${currentTask.title}"\n¿Eliminar esta tarea?`)) {
@@ -88,7 +174,6 @@ taskList.addEventListener('click', async (e) => {
     }
   }
 
-  // Editar tarea (título)
   if (e.target.classList.contains('edit-btn')) {
     const currentTask = allTasks.find(t => t.id == id);
     const newTitle = prompt('Editar tarea:', currentTask.title);
@@ -103,14 +188,8 @@ taskList.addEventListener('click', async (e) => {
   }
 });
 
-// FILTRO en tiempo real (sobre los datos ya cargados en memoria, sin pedir al servidor cada tecla)
-filterInput.addEventListener('input', () => {
-  const query = filterInput.value.toLowerCase();
-  const filtered = allTasks.filter(task =>
-    task.title.toLowerCase().includes(query)
-  );
-  renderTasks(filtered);
-});
-
-// Cargar tareas al iniciar
-fetchTasks();
+/* ==============================
+   FILTROS (texto + fecha, combinados)
+============================== */
+filterInput.addEventListener('input', fetchTasks);
+dateFilterSelect.addEventListener('change', fetchTasks);
