@@ -1,12 +1,13 @@
 const API_URL = '/api/tasks';
 const MATERIAS_URL = '/api/materias';
 
-// Elementos - navegación
+// Navegación
 const welcomeScreen = document.getElementById('welcome-screen');
 const appScreen = document.getElementById('app-screen');
 const enterBtn = document.getElementById('enter-btn');
+const backBtn = document.getElementById('back-btn');
 
-// Elementos - formulario y filtros
+// Formulario y filtros
 const taskForm = document.getElementById('task-form');
 const taskInput = document.getElementById('task-input');
 const materiaSelect = document.getElementById('materia-select');
@@ -16,7 +17,17 @@ const filterInput = document.getElementById('filter-input');
 const dateFilterSelect = document.getElementById('date-filter-select');
 const taskList = document.getElementById('task-list');
 
+// Modal de edición
+const editModal = document.getElementById('edit-modal');
+const editForm = document.getElementById('edit-form');
+const editTitle = document.getElementById('edit-title');
+const editMateria = document.getElementById('edit-materia');
+const editFecha = document.getElementById('edit-fecha');
+const editCancelBtn = document.getElementById('edit-cancel-btn');
+
 let allTasks = [];
+let allMaterias = [];
+let editingTaskId = null;
 
 /* ==============================
    NAVEGACIÓN ENTRE PANTALLAS
@@ -28,20 +39,31 @@ enterBtn.addEventListener('click', () => {
   fetchTasks();
 });
 
+backBtn.addEventListener('click', () => {
+  appScreen.classList.add('hidden');
+  welcomeScreen.classList.remove('hidden');
+  // Reseteamos filtros para que la próxima vez que entre, empiece limpio
+  filterInput.value = '';
+  dateFilterSelect.value = '';
+});
+
 /* ==============================
    MATERIAS
 ============================== */
 async function fetchMaterias() {
   try {
     const res = await fetch(MATERIAS_URL);
-    const materias = await res.json();
+    allMaterias = await res.json();
 
-    materiaSelect.innerHTML = '<option value="">Sin materia</option>';
-    materias.forEach(materia => {
-      const opt = document.createElement('option');
-      opt.value = materia.id;
-      opt.textContent = materia.nombre;
-      materiaSelect.appendChild(opt);
+    // Llenamos ambos selects: el del formulario de creación y el del modal de edición
+    [materiaSelect, editMateria].forEach(select => {
+      select.innerHTML = '<option value="">Sin materia</option>';
+      allMaterias.forEach(materia => {
+        const opt = document.createElement('option');
+        opt.value = materia.id;
+        opt.textContent = materia.nombre;
+        select.appendChild(opt);
+      });
     });
   } catch (err) {
     console.error('Error al obtener materias:', err);
@@ -150,7 +172,7 @@ taskForm.addEventListener('submit', async (e) => {
 });
 
 /* ==============================
-   ACTUALIZAR / ELIMINAR (delegación de eventos)
+   ELIMINAR y ABRIR MODAL DE EDICIÓN
 ============================== */
 taskList.addEventListener('click', async (e) => {
   const id = e.target.dataset.id;
@@ -175,16 +197,55 @@ taskList.addEventListener('click', async (e) => {
   }
 
   if (e.target.classList.contains('edit-btn')) {
-    const currentTask = allTasks.find(t => t.id == id);
-    const newTitle = prompt('Editar tarea:', currentTask.title);
-    if (newTitle !== null && newTitle.trim() !== '') {
-      await fetch(`${API_URL}/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: newTitle.trim() })
-      });
-      fetchTasks();
-    }
+    openEditModal(id);
+  }
+});
+
+/* ==============================
+   MODAL DE EDICIÓN COMPLETO
+============================== */
+function openEditModal(id) {
+  const task = allTasks.find(t => t.id == id);
+  if (!task) return;
+
+  editingTaskId = id;
+  editTitle.value = task.title;
+  editMateria.value = task.materia_id || '';
+  editFecha.value = task.fecha_entrega ? task.fecha_entrega.split('T')[0] : '';
+
+  editModal.classList.remove('hidden');
+}
+
+function closeEditModal() {
+  editModal.classList.add('hidden');
+  editingTaskId = null;
+}
+
+editCancelBtn.addEventListener('click', closeEditModal);
+
+// Cerrar el modal si se hace clic fuera del cuadro (en el fondo oscuro)
+editModal.addEventListener('click', (e) => {
+  if (e.target === editModal) closeEditModal();
+});
+
+editForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!editingTaskId) return;
+
+  try {
+    await fetch(`${API_URL}/${editingTaskId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: editTitle.value.trim(),
+        materia_id: editMateria.value || null,
+        fecha_entrega: editFecha.value || null
+      })
+    });
+    closeEditModal();
+    fetchTasks();
+  } catch (err) {
+    console.error('Error al actualizar tarea:', err);
   }
 });
 

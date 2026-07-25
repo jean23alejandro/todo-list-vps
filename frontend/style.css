@@ -1,11 +1,12 @@
 * {
   box-sizing: border-box;
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', Arial, sans-serif;
 }
 
 body {
-  background-color: #f4f4f4;
+  background: linear-gradient(135deg, #e0f2f1 0%, #e8eaf6 100%);
   margin: 0;
+  min-height: 100vh;
 }
 
 .hidden {
@@ -22,53 +23,80 @@ body {
 
 .welcome-box {
   background: white;
-  padding: 40px;
-  border-radius: 10px;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.15);
+  padding: 48px;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
   text-align: center;
-  max-width: 400px;
+  max-width: 420px;
 }
 
 .welcome-box h1 {
-  color: #333;
+  color: #1a237e;
   margin-bottom: 8px;
+  font-size: 26px;
 }
 
 .welcome-box p {
   color: #666;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .welcome-box button {
-  padding: 12px 32px;
-  background-color: #2e7d32;
+  padding: 14px 40px;
+  background: linear-gradient(135deg, #43a047, #2e7d32);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 16px;
+  font-weight: bold;
   cursor: pointer;
+  transition: transform 0.15s ease;
 }
 
 .welcome-box button:hover {
-  background-color: #1b5e20;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(46,125,50,0.4);
 }
 
 /* ===== Pantalla principal ===== */
 .container {
-  max-width: 700px;
+  max-width: 750px;
   margin: 0 auto;
   background: white;
-  padding: 24px;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  padding: 28px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
   margin-top: 40px;
   margin-bottom: 40px;
 }
 
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+#back-btn {
+  padding: 8px 14px;
+  background: #eceff1;
+  color: #37474f;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#back-btn:hover {
+  background: #cfd8dc;
+}
+
 h1 {
   text-align: center;
-  color: #333;
+  color: #1a237e;
   font-size: 22px;
+  flex: 1;
+  margin: 0;
 }
 
 #task-form {
@@ -77,6 +105,9 @@ h1 {
   gap: 8px;
   margin-bottom: 16px;
   align-items: center;
+  background: #f5f5f5;
+  padding: 14px;
+  border-radius: 8px;
 }
 
 #task-input {
@@ -84,26 +115,36 @@ h1 {
   min-width: 150px;
   padding: 10px;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 #materia-select, #fecha-input, #date-filter-select {
   padding: 10px;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
-#task-form button, #new-materia-btn {
-  padding: 10px 16px;
-  background-color: #2e7d32;
+#task-form button[type="submit"] {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #43a047, #2e7d32);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+#new-materia-btn {
+  padding: 10px 14px;
+  background: #5c6bc0;
+  color: white;
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
 }
 
-#task-form button:hover, #new-materia-btn:hover {
-  background-color: #1b5e20;
+#task-form button:hover {
+  filter: brightness(1.1);
 }
 
 .filters {
@@ -116,7 +157,7 @@ h1 {
   flex: 1;
   padding: 10px;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 /* ===== Tabla de tareas ===== */
@@ -127,16 +168,22 @@ h1 {
 
 #task-table th {
   text-align: left;
-  border-bottom: 2px solid #ddd;
-  padding: 8px;
-  font-size: 14px;
-  color: #555;
+  border-bottom: 2px solid #c5cae9;
+  padding: 10px 8px;
+  font-size: 13px;
+  color: #3949ab;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 #task-table td {
   border-bottom: 1px solid #eee;
-  padding: 8px;
+  padding: 10px 8px;
   font-size: 14px;
+}
+
+#task-table tr:hover {
+  background: #fafafa;
 }
 
 #task-table tr.completed .task-title {
@@ -153,14 +200,81 @@ h1 {
 }
 
 .materia-badge {
-  background: #e8f5e9;
-  color: #2e7d32;
-  padding: 2px 8px;
-  border-radius: 10px;
+  background: #e8eaf6;
+  color: #3949ab;
+  padding: 3px 10px;
+  border-radius: 12px;
   font-size: 12px;
+  font-weight: 500;
 }
 
 .sin-materia {
-  color: #aaa;
+  color: #bbb;
   font-size: 12px;
+}
+
+/* ===== Modal de edición ===== */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-box {
+  background: white;
+  padding: 28px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 380px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+}
+
+.modal-box h2 {
+  margin-top: 0;
+  color: #1a237e;
+  font-size: 20px;
+}
+
+.modal-box label {
+  display: block;
+  font-size: 13px;
+  color: #555;
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+
+.modal-box input, .modal-box select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+#edit-cancel-btn {
+  padding: 10px 16px;
+  background: #eceff1;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#edit-save-btn {
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #43a047, #2e7d32);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
 }

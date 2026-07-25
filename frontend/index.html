@@ -20,7 +20,10 @@
   <!-- PANTALLA PRINCIPAL (CRUD) -->
   <section id="app-screen" class="screen hidden">
     <div class="container">
-      <h1>Mi Lista de Tareas</h1>
+      <div class="top-bar">
+        <button id="back-btn" title="Volver al inicio">⬅ Volver</button>
+        <h1>Mi Lista de Tareas</h1>
+      </div>
 
       <form id="task-form">
         <input type="text" id="task-input" placeholder="Nueva tarea..." required>
@@ -58,6 +61,30 @@
       </table>
     </div>
   </section>
+
+  <!-- MODAL DE EDICIÓN -->
+  <div id="edit-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <h2>Editar tarea</h2>
+      <form id="edit-form">
+        <label for="edit-title">Título</label>
+        <input type="text" id="edit-title" required>
+
+        <label for="edit-materia">Materia</label>
+        <select id="edit-materia">
+          <option value="">Sin materia</option>
+        </select>
+
+        <label for="edit-fecha">Fecha de entrega</label>
+        <input type="date" id="edit-fecha">
+
+        <div class="modal-actions">
+          <button type="button" id="edit-cancel-btn">Cancelar</button>
+          <button type="submit" id="edit-save-btn">Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>

@@ -113,14 +113,24 @@ app.put('/api/tasks/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { title, completed, fecha_entrega, materia_id } = req.body;
+
+    // Distinguimos "el campo no vino en el body" (undefined) de "vino explícitamente en null"
     const result = await pool.query(
       `UPDATE tasks SET
         title = COALESCE($1, title),
         completed = COALESCE($2, completed),
-        fecha_entrega = COALESCE($3, fecha_entrega),
-        materia_id = COALESCE($4, materia_id)
+        fecha_entrega = CASE WHEN $6 THEN $3 ELSE fecha_entrega END,
+        materia_id = CASE WHEN $7 THEN $4 ELSE materia_id END
        WHERE id = $5 RETURNING *`,
-      [title, completed, fecha_entrega, materia_id, id]
+      [
+        title,
+        completed,
+        fecha_entrega,
+        materia_id,
+        id,
+        fecha_entrega !== undefined,
+        materia_id !== undefined
+      ]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Tarea no encontrada' });
