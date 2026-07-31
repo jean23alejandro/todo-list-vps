@@ -4,7 +4,10 @@ const pool = require('./db');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: ['http://34.122.131.138'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+}));
 app.use(express.json());
 
 /* ==============================
@@ -96,6 +99,9 @@ app.post('/api/tasks', async (req, res) => {
     const { title, fecha_entrega, materia_id } = req.body;
     if (!title || title.trim() === '') {
       return res.status(400).json({ error: 'El título es obligatorio' });
+    }
+    if (title.length > 255) {
+      return res.status(400).json({ error: 'El título no puede superar los 255 caracteres' });
     }
     const result = await pool.query(
       'INSERT INTO tasks (title, fecha_entrega, materia_id) VALUES ($1, $2, $3) RETURNING *',
